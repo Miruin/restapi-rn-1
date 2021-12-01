@@ -1,4 +1,4 @@
-import { Router} from 'express';
+import { Request, Response, Router} from 'express';
 import { auth } from '../helpers/service';
 import cu from '../controllers/controllersUser';
 
@@ -22,6 +22,13 @@ class Rutasuser{
         this.router.get('/log', auth, cu.logout);
 
         this.router.get('/perfil', auth, cu.datosuser);
+
+        this.router.get('/buscar/:username', (req: Request, res: Response) => {
+
+            console.log(req.params.username);
+            res.send({nick: req.params.username})
+            
+        })
 
         //this.router.put('/actualizar', auth, cu.moduser);
 
