@@ -23,7 +23,7 @@ class Rutasuser{
 
         this.router.get('/perfil', auth, controllersuser.datosuser);
 
-        this.router.get('/perfil/:username', controllersuser.getuser);
+        this.router.get('/perfil/:username', auth, controllersuser.getuser);
 
 
 

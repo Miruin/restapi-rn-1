@@ -22,7 +22,7 @@ class Rutaspost{
 
         this.router.delete('/post/:id', auth, controllerspost.borrarPost);
 
-        this.router.get('/posts/:username', controllerspost.getDatosPosts);
+        this.router.get('/posts/:username', auth, controllerspost.getDatosPosts);
 
 
     }

@@ -16,7 +16,7 @@ class Rutaspost {
         this.router.post('/post', service_1.auth, service_2.upload.single('archivo'), controllersPost_1.default.crearPost);
         this.router.get('/posts', service_1.auth, controllersPost_1.default.getMyPosts);
         this.router.delete('/post/:id', service_1.auth, controllersPost_1.default.borrarPost);
-        this.router.get('/posts/:username', controllersPost_1.default.getDatosPosts);
+        this.router.get('/posts/:username', service_1.auth, controllersPost_1.default.getDatosPosts);
     }
 }
 const rutapost = new Rutaspost();
