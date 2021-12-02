@@ -141,7 +141,7 @@ class Controllerspost {
 
             const result = await pool.request()
             .input('username', username)
-            .query(String(config.q8));
+            .query(String(config.q7));
 
             if (result.recordset[0]) {
 
@@ -163,14 +163,14 @@ class Controllerspost {
 
     async getDatosPosts(req: Request, res: Response): Promise<any>{
 
-        let Username = req.params.username;
+        let username = req.params.username;
 
         try {
             
             const pool = await getcon();
             
             const result = await pool.request()
-            .input('username', Username)
+            .input('username', username)
             .query(String(config.q7));
 
             if (result.recordset) {
@@ -180,7 +180,7 @@ class Controllerspost {
                 
             }
 
-            const result1 = await getdatosuser(pool, Username);
+            const result1 = await getdatosuser(pool, username);
 
             if (!result1.recordset[0]) 
             return res.status(500).send({msg: 'Error en el servidor no se encuentra el usuario'});

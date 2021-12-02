@@ -110,7 +110,7 @@ class Controllerspost {
                 const pool = yield (0, connection_1.getcon)();
                 const result = yield pool.request()
                     .input('username', username)
-                    .query(String(config_1.default.q8));
+                    .query(String(config_1.default.q7));
                 if (result.recordset[0]) {
                     pool.close();
                     return res.status(200).send(result.recordset);
@@ -125,17 +125,17 @@ class Controllerspost {
     }
     getDatosPosts(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            let Username = req.params.username;
+            let username = req.params.username;
             try {
                 const pool = yield (0, connection_1.getcon)();
                 const result = yield pool.request()
-                    .input('username', Username)
+                    .input('username', username)
                     .query(String(config_1.default.q7));
                 if (result.recordset) {
                     pool.close();
                     return res.status(200).send(result.recordset);
                 }
-                const result1 = yield (0, connection_1.getdatosuser)(pool, Username);
+                const result1 = yield (0, connection_1.getdatosuser)(pool, username);
                 if (!result1.recordset[0])
                     return res.status(500).send({ msg: 'Error en el servidor no se encuentra el usuario' });
                 let { nick_usuario, email_usuario, nombre_usuario, apellido_usuario, descripcion_usuario } = result1
