@@ -67,7 +67,9 @@ class Controllersuser {
                     return res.status(400).send({ msg: 'No se han llenado los valores correctamente' });
                 }
                 else {
-                    const result = yield (0, connection_1.getdatosuser)(pool, Username);
+                    const result = yield pool.request()
+                        .input('username', Username)
+                        .query(String(config_1.default.q2_1));
                     if (result.recordset[0]) {
                         const pwv = yield bcryptjs_1.default.compare(Password, result.recordset[0].pw_usuario);
                         if (pwv) {
@@ -93,12 +95,20 @@ class Controllersuser {
     }
     datosuser(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
+            let usuario = req.user;
             try {
                 const pool = yield (0, connection_1.getcon)();
-                const result = yield (0, connection_1.getdatosuser)(pool, String(req.user));
+                const result = yield (0, connection_1.getdatosuser)(pool, String(usuario));
                 let { nick_usuario, email_usuario, nombre_usuario, apellido_usuario, descripcion_usuario } = result.recordset[0];
+                const Usuario = {
+                    username: nick_usuario,
+                    email: email_usuario,
+                    nombre: nombre_usuario,
+                    apellido: apellido_usuario,
+                    descripcion: descripcion_usuario
+                };
                 pool.close();
-                return res.status(200).send({ nick: nick_usuario, email: email_usuario, nombre: nombre_usuario, apellido: apellido_usuario, descripcion: descripcion_usuario });
+                return res.status(200).send({ usuario: Usuario });
             }
             catch (error) {
                 console.error(error);
@@ -106,61 +116,29 @@ class Controllersuser {
             }
         });
     }
-    /*async moduser(req: Request, res: Response): Promise<any> {
-    
-        try {
-    
-            let { nick, email, na, fn} = req.body;
-    
-            const pool = await getcon();
-            const result = await getdatosuser(pool, String(req.user));
-    
-            if (nick == result.recordset[0].nick_usuario && email == result.recordset[0].email_usuario &&
-                na == result.recordset[0].na_usuario && fn == result.recordset[0].fn_usuario) {
-    
+    getuser(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let username = req.params.username;
+            try {
+                const pool = yield (0, connection_1.getcon)();
+                const result = yield (0, connection_1.getdatosuser)(pool, username);
+                let { nick_usuario, email_usuario, nombre_usuario, apellido_usuario, descripcion_usuario } = result.recordset[0];
+                const Usuario = {
+                    username: nick_usuario,
+                    email: email_usuario,
+                    nombre: nombre_usuario,
+                    apellido: apellido_usuario,
+                    descripcion: descripcion_usuario
+                };
                 pool.close();
-                return res.status(200).send({msg: 'No se ha cambiado ningun valor...'});
-                
-            } else {
-    
-                const result = await getdatosuser(pool, nick);
-                
-                if (result.recordset[0]) {
-    
-    
-                    await pool.request()
-                    .input('email', sql.VarChar, email)
-                    .input('na', sql.VarChar, na)
-                    .input('fn', sql.VarChar, fn)
-                    .input('nickname', req.user)
-                    .query(String(config.q5));
-                    
-                    pool.close();
-                    return res.status(200).send({msg: 'Se ha actualizado satisfactoriamente'});
-                } else {
-    
-                    await pool.request()
-                    .input('nick', sql.VarChar, nick)
-                    .input('email', sql.VarChar, email)
-                    .input('na', sql.VarChar, na)
-                    .input('fn', sql.VarChar, fn)
-                    .input('nickname', req.user)
-                    .query(String(config.q4));
-                    pool.close();
-                    return res.status(200).send({token: creartoken(nick), msg: 'Se ha actualizado satisfactoriamente'});
-                    
-                }
-    
-                
+                return res.status(200).send({ usuario: Usuario });
             }
-            
-        } catch (error) {
-    
-            console.error(error);
-            return res.status(500).send({msg: 'Error en el servidor'});
-            
-        }
-    }*/
+            catch (error) {
+                console.error(error);
+                return res.status(500).send({ msg: 'Error en el servidor' });
+            }
+        });
+    }
     logout(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -182,5 +160,5 @@ class Controllersuser {
         });
     }
 }
-const cu = new Controllersuser();
-exports.default = cu;
+const controllersuser = new Controllersuser();
+exports.default = controllersuser;

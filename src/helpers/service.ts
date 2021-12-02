@@ -10,13 +10,9 @@ const storage = multer.diskStorage({
 
     destination: function(req, file, cb){
         
-        let urldirectorio = "libreria/manga/"+req.body.namemanga;
+        let urldirectorio = "public/post/"+req.user;
 
-        if( fs.existsSync(urldirectorio) ){
-
-            console.log('el directorio ya esta creado');
-            
-        } else {
+        if( !fs.existsSync(urldirectorio) ){
 
             fs.mkdirSync(urldirectorio, { recursive: true });
 
@@ -27,7 +23,7 @@ const storage = multer.diskStorage({
     },
     filename: function(req, file, cb){
 
-        let urlarchivo = Date.now()+file.originalname+"."+mimeTypes.extension(file.mimetype);
+        let urlarchivo = Date.now()+"-"+req.user+"."+mimeTypes.extension(file.mimetype);
         
         cb(null,urlarchivo);
     }

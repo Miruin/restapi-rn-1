@@ -12,7 +12,8 @@ export default{
 
     q1: process.env.Q1,
     q2: process.env.Q2,
-    //q3: process.env.Q3,
+    q2_1: process.env.Q2_1,
+    q3: process.env.Q3,
     q4: process.env.Q4,
     q5: process.env.Q5,
     q6: process.env.Q6,

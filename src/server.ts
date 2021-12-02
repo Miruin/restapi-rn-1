@@ -1,5 +1,6 @@
 import express from 'express'
-import ru from './routes/routeuser';
+import rutauser from './routes/routeuser';
+import rutapost from './routes/routepost'
 import config from './config/config';
 import cors from 'cors'
 
@@ -23,14 +24,15 @@ class server {
 
         this.app.use(express.urlencoded({ extended: false }));
         this.app.use(express.json());
-        this.app.use(express.static('libreria'));
+        this.app.use(express.static('public'));
         this.app.use(cors());
         
     }
 
     routes() {
 
-        this.app.use(ru);
+        this.app.use(rutauser);
+        this.app.use(rutapost);
 
     }
     

@@ -77,7 +77,9 @@ class Controllersuser {
                 
             } else {
                 
-                const result = await getdatosuser(pool, Username);
+                const result = await pool.request()
+                .input('username', Username)
+                .query(String(config.q2_1));
     
                 if (result.recordset[0]) {
     
@@ -114,18 +116,29 @@ class Controllersuser {
     }
     
     async datosuser(req: Request, res: Response): Promise<any> {
+
+        let usuario = req.user
     
         try {
     
             const pool = await getcon();
 
-            const result = await getdatosuser(pool, String(req.user));
+            const result = await getdatosuser(pool, String(usuario));
     
             let {nick_usuario, email_usuario, nombre_usuario, apellido_usuario, descripcion_usuario} = result.recordset[0];
     
+            const Usuario = {
+
+                username: nick_usuario,
+                email: email_usuario,
+                nombre: nombre_usuario,
+                apellido: apellido_usuario,
+                descripcion: descripcion_usuario
+
+            }
             pool.close();
             
-            return res.status(200).send({nick: nick_usuario, email: email_usuario, nombre: nombre_usuario, apellido: apellido_usuario, descripcion: descripcion_usuario});
+            return res.status(200).send({usuario: Usuario});
             
         } catch (error) {
     
@@ -134,54 +147,31 @@ class Controllersuser {
             
         }
     }
-    
-    /*async moduser(req: Request, res: Response): Promise<any> {
+
+    async getuser(req: Request, res: Response): Promise<any> {
+
+        let username = req.params.username
     
         try {
     
-            let { nick, email, na, fn} = req.body;
-    
             const pool = await getcon();
-            const result = await getdatosuser(pool, String(req.user));
+
+            const result = await getdatosuser(pool, username);
     
-            if (nick == result.recordset[0].nick_usuario && email == result.recordset[0].email_usuario &&
-                na == result.recordset[0].na_usuario && fn == result.recordset[0].fn_usuario) {
+            let {nick_usuario, email_usuario, nombre_usuario, apellido_usuario, descripcion_usuario} = result.recordset[0];
     
-                pool.close();
-                return res.status(200).send({msg: 'No se ha cambiado ningun valor...'});
-                
-            } else {
-    
-                const result = await getdatosuser(pool, nick);
-                
-                if (result.recordset[0]) {
-    
-    
-                    await pool.request()
-                    .input('email', sql.VarChar, email)
-                    .input('na', sql.VarChar, na)
-                    .input('fn', sql.VarChar, fn)
-                    .input('nickname', req.user)
-                    .query(String(config.q5));
-                    
-                    pool.close();
-                    return res.status(200).send({msg: 'Se ha actualizado satisfactoriamente'});
-                } else {
-    
-                    await pool.request()
-                    .input('nick', sql.VarChar, nick)
-                    .input('email', sql.VarChar, email)
-                    .input('na', sql.VarChar, na)
-                    .input('fn', sql.VarChar, fn)
-                    .input('nickname', req.user)
-                    .query(String(config.q4));
-                    pool.close();
-                    return res.status(200).send({token: creartoken(nick), msg: 'Se ha actualizado satisfactoriamente'});
-                    
-                }
-    
-                
+            const Usuario = {
+
+                username: nick_usuario,
+                email: email_usuario,
+                nombre: nombre_usuario,
+                apellido: apellido_usuario,
+                descripcion: descripcion_usuario
+
             }
+            pool.close();
+            
+            return res.status(200).send({usuario: Usuario});
             
         } catch (error) {
     
@@ -189,8 +179,7 @@ class Controllersuser {
             return res.status(500).send({msg: 'Error en el servidor'});
             
         }
-    }*/
-    
+    }
     
     async logout(req: Request, res: Response): Promise<any> {
 
@@ -221,37 +210,9 @@ class Controllersuser {
         
     }
     
-    /*async deluser(req: Request, res: Response): Promise<any> {
-    
-        try {
-    
-            const pool = await getcon();
-            const result = await getdatosuser(pool, String(req.user));
-    
-            if (result.recordset[0]) {
-    
-                await pool.request()
-                .input('nick', req.user)
-                .query(String(config.q6));
-                pool.close();
-                return res.status(200).send({msg: 'El usuario se ha eliminado'});
-            } else {
-    
-                pool.close()
-                return res.status(400).send({msg: 'No se encontro el usuario'});
-            }
-            
-        } catch (error) {
-    
-            console.error(error);
-            return res.status(500).send({msg: 'Error en el servidor'});
-            
-        }
-    
-    }*/
 }
 
 
-const cu = new Controllersuser();
+const controllersuser = new Controllersuser();
 
-export default cu;
+export default controllersuser;

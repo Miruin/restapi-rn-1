@@ -12,17 +12,14 @@ const mime_types_1 = __importDefault(require("mime-types"));
 const fs_1 = __importDefault(require("fs"));
 const storage = multer_1.default.diskStorage({
     destination: function (req, file, cb) {
-        let urldirectorio = "libreria/manga/" + req.body.namemanga;
-        if (fs_1.default.existsSync(urldirectorio)) {
-            console.log('el directorio ya esta creado');
-        }
-        else {
+        let urldirectorio = "public/post/" + req.user;
+        if (!fs_1.default.existsSync(urldirectorio)) {
             fs_1.default.mkdirSync(urldirectorio, { recursive: true });
         }
         cb(null, urldirectorio);
     },
     filename: function (req, file, cb) {
-        let urlarchivo = Date.now() + file.originalname + "." + mime_types_1.default.extension(file.mimetype);
+        let urlarchivo = Date.now() + "-" + req.user + "." + mime_types_1.default.extension(file.mimetype);
         cb(null, urlarchivo);
     }
 });

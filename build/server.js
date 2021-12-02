@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const routeuser_1 = __importDefault(require("./routes/routeuser"));
+const routepost_1 = __importDefault(require("./routes/routepost"));
 const config_1 = __importDefault(require("./config/config"));
 const cors_1 = __importDefault(require("cors"));
 class server {
@@ -18,11 +19,12 @@ class server {
         //middleware
         this.app.use(express_1.default.urlencoded({ extended: false }));
         this.app.use(express_1.default.json());
-        this.app.use(express_1.default.static('libreria'));
+        this.app.use(express_1.default.static('public'));
         this.app.use((0, cors_1.default)());
     }
     routes() {
         this.app.use(routeuser_1.default);
+        this.app.use(routepost_1.default);
     }
     start() {
         this.app.listen(this.app.get('port'), () => {
