@@ -74,17 +74,51 @@ class Controllersuser {
                         const pwv = yield bcryptjs_1.default.compare(Password, result.recordset[0].pw_usuario);
                         if (pwv) {
                             pool.close();
-                            return res.status(200).send({ token: (0, service_1.creartoken)(Username), msg: 'Se ha iniciado secion satisfactoriamente', nickname: Username });
+                            return res.status(200).send({ token: (0, service_1.creartoken)(Username), msg: 'Se ha iniciado secion satisfactoriamente' });
                         }
                         else {
                             pool.close();
-                            return res.status(200).send({ msg: 'La contrasena no coincide' });
+                            return res.status(400).send({ msg: 'La contrasena no coincide' });
                         }
                     }
                     else {
                         pool.close();
-                        return res.status(200).send({ msg: 'No se ha encontrado el usuario' });
+                        return res.status(400).send({ msg: 'No se ha encontrado el usuario' });
                     }
+                }
+            }
+            catch (error) {
+                console.error(error);
+                return res.status(500).send({ msg: 'Error en el servidor' });
+            }
+        });
+    }
+    moduser(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                let { Email, Name, Lastname, Description } = req.body;
+                const pool = yield (0, connection_1.getcon)();
+                const result = yield (0, connection_1.getdatosuser)(pool, String(req.user));
+                if (Email == result.recordset[0].email_usuario &&
+                    Name == result.recordset[0].nombre_usuario &&
+                    Lastname == result.recordset[0].apellido_usuario &&
+                    Description == result.recordset[0].descripcion_usuario) {
+                    pool.close();
+                    return res.status(400).send({ msg: 'No se ha cambiado ningun valor...' });
+                }
+                if (Name && Lastname && Email) {
+                    if (!Description) {
+                        Description = 'Soy ' + Name + ' ' + Lastname;
+                    }
+                    yield pool.request()
+                        .input('email', mssql_1.default.VarChar, Email)
+                        .input('nombre', mssql_1.default.VarChar, Name)
+                        .input('apellido', mssql_1.default.VarChar, Lastname)
+                        .input('descripcion', mssql_1.default.VarChar, Description)
+                        .input('nickname', req.user)
+                        .query(String(config_1.default.q5_1));
+                    pool.close();
+                    return res.status(200).send({ msg: 'Se ha actualizado satisfactoriamente' });
                 }
             }
             catch (error) {

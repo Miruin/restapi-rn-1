@@ -17,6 +17,7 @@ class Rutasuser {
         this.router.get('/log', service_1.auth, controllersUser_1.default.logout);
         this.router.get('/perfil', service_1.auth, controllersUser_1.default.datosuser);
         this.router.get('/perfil/:username', service_1.auth, controllersUser_1.default.getuser);
+        this.router.put('/perfil', service_1.auth, controllersUser_1.default.moduser);
     }
 }
 const rutauser = new Rutasuser();

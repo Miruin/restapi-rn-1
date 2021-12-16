@@ -86,21 +86,21 @@ class Controllersuser {
                     const pwv = await bcryptjs.compare(Password, result.recordset[0].pw_usuario);
     
                     if (pwv) {
-    
+                        
                         pool.close();
-                        return res.status(200).send({token: creartoken(Username), msg: 'Se ha iniciado secion satisfactoriamente', nickname: Username});
+                        return res.status(200).send({token: creartoken(Username), msg: 'Se ha iniciado secion satisfactoriamente'});
                         
                     } else {
 
                         pool.close();
-                        return res.status(200).send({msg: 'La contrasena no coincide'});
+                        return res.status(400).send({msg: 'La contrasena no coincide'});
 
                     }
     
                 } else {
 
                     pool.close();
-                    return res.status(200).send({msg: 'No se ha encontrado el usuario'});
+                    return res.status(400).send({msg: 'No se ha encontrado el usuario'});
 
                 } 
     
@@ -114,7 +114,57 @@ class Controllersuser {
         }
     
     }
+
+    async moduser(req: Request, res: Response): Promise<any> {
     
+        try {
+    
+            let { Email, Name, Lastname, Description } = req.body;
+    
+            const pool = await getcon();
+
+            const result = await getdatosuser(pool, String(req.user));
+    
+            if (Email == result.recordset[0].email_usuario &&
+                Name == result.recordset[0].nombre_usuario &&
+                Lastname == result.recordset[0].apellido_usuario && 
+                Description == result.recordset[0].descripcion_usuario) {
+    
+                pool.close();
+                return res.status(400).send({msg: 'No se ha cambiado ningun valor...'});
+                
+            } 
+    
+        
+            if(Name && Lastname && Email){
+
+                if (!Description) {
+
+                   Description = 'Soy '+Name+' '+Lastname;
+                    
+                }
+
+                await pool.request()
+                .input('email', sql.VarChar, Email)
+                .input('nombre', sql.VarChar, Name)
+                .input('apellido', sql.VarChar, Lastname)
+                .input('descripcion', sql.VarChar, Description)
+                .input('nickname', req.user)
+                .query(String(config.q5_1));
+                    
+                pool.close();
+                return res.status(200).send({msg: 'Se ha actualizado satisfactoriamente'});
+            }
+            
+            
+        } catch (error) {
+    
+            console.error(error);
+            return res.status(500).send({msg: 'Error en el servidor'});
+            
+        }
+    }
+
     async datosuser(req: Request, res: Response): Promise<any> {
 
         let usuario = req.user

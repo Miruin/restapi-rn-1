@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Request, Router } from 'express';
 import { auth } from '../helpers/service';
 import controllerspost from '../controllers/controllersPost';
 import { upload } from '../helpers/service';
@@ -16,7 +16,7 @@ class Rutaspost{
    
     routes() {
         
-        this.router.post('/post', auth, upload.single('archivo'), controllerspost.crearPost);
+        this.router.post('/post',auth, upload.single('archivo'), controllerspost.crearPost);
 
         this.router.get('/posts', auth, controllerspost.getMyPosts);
 

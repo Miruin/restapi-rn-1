@@ -13,6 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs_1 = __importDefault(require("fs"));
+const mime_types_1 = __importDefault(require("mime-types"));
 const mssql_1 = __importDefault(require("mssql"));
 const path_1 = __importDefault(require("path"));
 const config_1 = __importDefault(require("../config/config"));
@@ -23,13 +24,39 @@ class Controllerspost {
     crearPost(req, res) {
         var _a;
         return __awaiter(this, void 0, void 0, function* () {
-            let { descripcionpost } = req.body;
+            let { descripcionpost, archivoUri, archivoName, archivoType } = req.body;
             let nick = req.user;
             let autor = req.user;
-            let urlarchivo = "https://restapi-twitterclone1.herokuapp.com/post/" + req.user + "/" + ((_a = req.file) === null || _a === void 0 ? void 0 : _a.filename);
             try {
                 const pool = yield (0, connection_1.getcon)();
                 if (!req.file) {
+                    if (archivoUri && archivoName && archivoType) {
+                        console.log('a trabajar la imagen malditasea...');
+                        let archivoMetaData = archivoUri.split(",");
+                        let urldirectorio = "public/post/" + req.user;
+                        let mimeT = archivoName.split('.');
+                        if (archivoType == 'image/jpg') {
+                            archivoType = 'image/jpeg';
+                        }
+                        let name_archivo = Date.now() + "-" + req.user + "." + mime_types_1.default.extension(archivoType);
+                        let urlarchivo = "https://restapi-twitterclone1.herokuapp.com/post/" + req.user + "/" + name_archivo;
+                        if (!fs_1.default.existsSync(urldirectorio)) {
+                            fs_1.default.mkdirSync(urldirectorio, { recursive: true });
+                        }
+                        fs_1.default.writeFile(urldirectorio + '/' + name_archivo, archivoMetaData[1], 'base64', (error) => {
+                            if (error) {
+                                console.error(error);
+                            }
+                        });
+                        yield pool.request()
+                            .input('nick', mssql_1.default.VarChar, nick)
+                            .input('autor', mssql_1.default.VarChar, autor)
+                            .input('descripcionpost', mssql_1.default.VarChar, descripcionpost)
+                            .input('archivourlpost', mssql_1.default.VarChar, urlarchivo)
+                            .query(String(config_1.default.q4));
+                        pool.close();
+                        return res.status(200).send({ msg: 'Se ha guardado el post satisfactoriamente' });
+                    }
                     if (descripcionpost) {
                         yield pool.request()
                             .input('nick', mssql_1.default.VarChar, nick)
@@ -43,6 +70,7 @@ class Controllerspost {
                     return res.status(400).send({ msg: 'No se han llenado los campos' });
                 }
                 else {
+                    let urlarchivo = "https://restapi-twitterclone1.herokuapp.com/post/" + req.user + "/" + ((_a = req.file) === null || _a === void 0 ? void 0 : _a.filename);
                     yield pool.request()
                         .input('nick', mssql_1.default.VarChar, nick)
                         .input('autor', mssql_1.default.VarChar, autor)
@@ -64,6 +92,7 @@ class Controllerspost {
             let id = req.params.id;
             let nick = req.user;
             try {
+                let e = null;
                 const pool = yield (0, connection_1.getcon)();
                 const result = yield pool.request()
                     .input('id', id)
@@ -76,10 +105,12 @@ class Controllerspost {
                         fs_1.default.stat(urlarchivo, (error, stats) => {
                             if (error) {
                                 console.error(error);
+                                e = error;
                             }
                             else {
                                 fs_1.default.unlink(urlarchivo, (error) => {
                                     if (error) {
+                                        e = error;
                                         console.error(error);
                                     }
                                 });
@@ -90,11 +121,11 @@ class Controllerspost {
                         .input('id', id)
                         .query(String(config_1.default.q6));
                     pool.close();
-                    return res.status(200).send({ msg: 'Se ha borrado el post satisfactoriamente' });
+                    return res.status(200).send({ msg: 'Se ha borrado el post satisfactoriamente', msgErr: e });
                 }
                 else {
                     pool.close();
-                    return res.status(500).send({ msg: 'Error en el servidor no se ha encontrado el post' });
+                    return res.status(400).send({ msg: 'Error no se ha encontrado el post' });
                 }
             }
             catch (error) {
@@ -116,7 +147,7 @@ class Controllerspost {
                     return res.status(200).send(result.recordset);
                 }
                 pool.close();
-                return res.status(200).send({ msg: 'No has creado ningun post' });
+                return res.status(400).send({ msg: 'No has creado ningun post' });
             }
             catch (error) {
                 console.error(error);
@@ -137,18 +168,9 @@ class Controllerspost {
                 }
                 const result1 = yield (0, connection_1.getdatosuser)(pool, username);
                 if (!result1.recordset[0])
-                    return res.status(500).send({ msg: 'Error en el servidor no se encuentra el usuario' });
-                let { nick_usuario, email_usuario, nombre_usuario, apellido_usuario, descripcion_usuario } = result1
-                    .recordset[0];
-                const Usuario = {
-                    username: nick_usuario,
-                    email: email_usuario,
-                    nombre: nombre_usuario,
-                    apellido: apellido_usuario,
-                    descripcion: descripcion_usuario
-                };
+                    return res.status(400).send({ msg: 'Error  no se encuentra el usuario' });
                 pool.close();
-                return res.status(200).send({ msg: 'Este usuario no tiene creado ningun post o los ha eliminado', usuario: Usuario });
+                return res.status(200).send({ msg: 'Este usuario no tiene creado ningun post o los ha eliminado' });
             }
             catch (error) {
                 console.error(error);

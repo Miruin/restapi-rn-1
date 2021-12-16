@@ -1,5 +1,6 @@
 import { Request, Response} from 'express';
 import fs from 'fs';
+import mimeTypes from 'mime-types';
 import sql from 'mssql';
 import path from 'path';
 import config from "../config/config";
@@ -13,16 +14,61 @@ class Controllerspost {
 
     async crearPost(req: Request, res: Response): Promise<any> {
 
-        let {descripcionpost} = req.body;
+        let {descripcionpost, archivoUri, archivoName, archivoType} = req.body;
+        
         let nick = req.user
-        let autor = req.user
-        let urlarchivo = "https://restapi-twitterclone1.herokuapp.com/post/"+req.user+"/"+req.file?.filename; 
+        let autor = req.user 
         
         try {
             
             const pool = await getcon();
 
             if (!req.file) {
+
+                if(archivoUri && archivoName && archivoType){
+
+                    console.log('a trabajar la imagen malditasea...');
+                    let archivoMetaData = archivoUri.split(",")
+                    let urldirectorio = "public/post/"+req.user
+                    let mimeT = archivoName.split('.')
+
+                    if (archivoType == 'image/jpg') {
+
+                        archivoType = 'image/jpeg'
+
+                    }
+
+                    let name_archivo = Date.now()+"-"+req.user+"."+mimeTypes.extension(archivoType);
+                    let urlarchivo = "https://restapi-twitterclone1.herokuapp.com/post/"+req.user+"/"+name_archivo;
+                
+                    if( !fs.existsSync(urldirectorio) ){
+
+                        fs.mkdirSync(urldirectorio, { recursive: true });
+            
+                    }
+
+                    fs.writeFile(urldirectorio+'/'+name_archivo, archivoMetaData[1], 'base64', (error) =>{
+
+                        if(error){
+
+                            console.error(error);
+                            
+                        }
+
+                    });
+
+                    await pool.request()
+                    .input('nick', sql.VarChar, nick)
+                    .input('autor', sql.VarChar, autor)
+                    .input('descripcionpost', sql.VarChar, descripcionpost)
+                    .input('archivourlpost', sql.VarChar, urlarchivo)
+                    .query(String(config.q4));
+                    
+    
+                    pool.close();
+                    return res.status(200).send({msg: 'Se ha guardado el post satisfactoriamente'});
+                    
+                }
 
                 if (descripcionpost) {
 
@@ -32,8 +78,8 @@ class Controllerspost {
                     .input('descripcionpost', sql.VarChar, descripcionpost)
                     .query(String(config.q3));
 
-                pool.close();
-                return res.status(200).send({msg: 'Se ha guardado el post satisfactoriamente'});
+                    pool.close();
+                    return res.status(200).send({msg: 'Se ha guardado el post satisfactoriamente'});
                     
                 }
 
@@ -41,6 +87,8 @@ class Controllerspost {
                 return res.status(400).send({ msg: 'No se han llenado los campos'});
                 
             } else {
+
+                let urlarchivo = "https://restapi-twitterclone1.herokuapp.com/post/"+req.user+"/"+req.file?.filename;
                 
                 await pool.request()
                 .input('nick', sql.VarChar, nick)
@@ -70,6 +118,7 @@ class Controllerspost {
         let nick = req.user
         try {
             
+            let e = null ;
             const pool = await getcon();
 
             const result = await pool.request()
@@ -90,6 +139,7 @@ class Controllerspost {
                         if(error){
 
                             console.error(error);
+                            e = error
                         
                         }else{       
 
@@ -97,7 +147,8 @@ class Controllerspost {
 
                                 if (error) {
         
-                                console.error(error);
+                                    e = error
+                                    console.error(error);
 
                                 }
         
@@ -113,12 +164,12 @@ class Controllerspost {
                 .query(String(config.q6));
 
                 pool.close();
-                return res.status(200).send({msg: 'Se ha borrado el post satisfactoriamente'})
+                return res.status(200).send({msg: 'Se ha borrado el post satisfactoriamente', msgErr: e})
                 
             } else {
 
                 pool.close();
-                return res.status(500).send({msg: 'Error en el servidor no se ha encontrado el post'})
+                return res.status(400).send({msg: 'Error no se ha encontrado el post'})
                 
             }
 
@@ -151,7 +202,7 @@ class Controllerspost {
             }
 
             pool.close();
-            return res.status(200).send({msg: 'No has creado ningun post'});
+            return res.status(400).send({msg: 'No has creado ningun post'});
             
         } catch (error) {
             
@@ -183,23 +234,10 @@ class Controllerspost {
             const result1 = await getdatosuser(pool, username);
 
             if (!result1.recordset[0]) 
-            return res.status(500).send({msg: 'Error en el servidor no se encuentra el usuario'});
-
-            let { nick_usuario, email_usuario, nombre_usuario, apellido_usuario, descripcion_usuario } = result1
-            .recordset[0];
-
-            const Usuario = {
-
-                username: nick_usuario,
-                email: email_usuario,
-                nombre: nombre_usuario,
-                apellido: apellido_usuario,
-                descripcion: descripcion_usuario
-
-            };
+            return res.status(400).send({msg: 'Error  no se encuentra el usuario'});
 
             pool.close();
-            return res.status(200).send({msg: 'Este usuario no tiene creado ningun post o los ha eliminado', usuario: Usuario});
+            return res.status(200).send({msg: 'Este usuario no tiene creado ningun post o los ha eliminado'});
 
         } catch (error) {
 

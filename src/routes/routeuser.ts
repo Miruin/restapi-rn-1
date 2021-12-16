@@ -25,6 +25,8 @@ class Rutasuser{
 
         this.router.get('/perfil/:username', auth, controllersuser.getuser);
 
+        this.router.put('/perfil', auth, controllersuser.moduser);
+
 
 
     }

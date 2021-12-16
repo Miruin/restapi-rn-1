@@ -11,7 +11,8 @@ const storage = multer.diskStorage({
     destination: function(req, file, cb){
         
         let urldirectorio = "public/post/"+req.user;
-
+        console.log(file);
+        
         if( !fs.existsSync(urldirectorio) ){
 
             fs.mkdirSync(urldirectorio, { recursive: true });
@@ -24,6 +25,7 @@ const storage = multer.diskStorage({
     filename: function(req, file, cb){
 
         let urlarchivo = Date.now()+"-"+req.user+"."+mimeTypes.extension(file.mimetype);
+        console.log(urlarchivo);
         
         cb(null,urlarchivo);
     }
